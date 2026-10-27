@@ -12,21 +12,52 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([userId, name])
+}
+
+model Transaction {
+  id         String          @id @default(uuid())
+  amount     Int
+  type       TransactionType
+  date       DateTime
+  note       String?
+  accountId  String
+  account    Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([accountId, date])
+}
+
 model Account {
-  id        String   @id @default(uuid())
-  name      String
-  currency  String   @default("USD")
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(uuid())
+  name         String
+  currency     String        @default("USD")
+  createdAt    DateTime      @default(now())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
 
   @@index([userId])
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
+  id           String     @id @default(uuid())
+  email        String     @unique
   passwordHash String
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime   @default(now())
   accounts     Account[]
+  categories   Category[]
 }
