@@ -9,6 +9,7 @@ import {
   listAccounts,
   deleteAccount,
   updateAccount,
+  getAccount,
 } from './accounts.service.js';
 
 export async function createAccountHandler(req: Request, res: Response) {
@@ -36,5 +37,12 @@ export async function updateAccountHandler(req: Request, res: Response) {
   const params = accountIdSchema.parse(req.params);
   const input = updateAccountSchema.parse(req.body);
   const account = await updateAccount(userId, params.id, input);
+  res.status(200).json(account);
+}
+
+export async function getAccountHandler(req: Request, res: Response) {
+  const userId = res.locals['userId'];
+  const params = accountIdSchema.parse(req.params);
+  const account = await getAccount(userId, params.id);
   res.status(200).json(account);
 }

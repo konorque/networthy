@@ -1,2 +1,3 @@
 # networthy
-Open source net worth app with big ambitions
+
+Open source net worth app
