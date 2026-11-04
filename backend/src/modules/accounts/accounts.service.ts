@@ -14,12 +14,25 @@ export async function createAccount(userId: string, input: CreateAccountInput) {
 }
 
 export async function listAccounts(userId: string) {
-  const list = await prisma.account.findMany({
+  const accounts = await prisma.account.findMany({
     where: { userId },
     orderBy: { createdAt: 'asc' },
     select: { id: true, name: true, currency: true, createdAt: true },
   });
-  return list;
+  const sums = await prisma.transaction.groupBy({
+    by: ['accountId', 'type'],
+    where: { account: { userId } },
+    _sum: { amount: true },
+  });
+  return accounts.map((account) => {
+    const income =
+      sums.find((s) => s.accountId === account.id && s.type === 'INCOME')?._sum
+        .amount ?? 0;
+    const expense =
+      sums.find((s) => s.accountId === account.id && s.type === 'EXPENSE')?._sum
+        .amount ?? 0;
+    return { ...account, balance: income - expense };
+  });
 }
 
 export async function deleteAccount(userId: string, accountId: string) {
@@ -44,4 +57,22 @@ export async function updateAccount(
     select: { id: true, name: true, currency: true, createdAt: true },
   });
   return result;
+}
+
+export async function getAccount(userId: string, accountId: string) {
+  const account = await prisma.account.findFirst({
+    where: { id: accountId, userId },
+    select: { id: true, name: true, currency: true, createdAt: true },
+  });
+  if (!account) throw new HttpError(404, 'Account not found');
+  const incomes = await prisma.transaction.aggregate({
+    where: { accountId, type: 'INCOME' },
+    _sum: { amount: true },
+  });
+  const expenses = await prisma.transaction.aggregate({
+    where: { accountId, type: 'EXPENSE' },
+    _sum: { amount: true },
+  });
+  const balance = (incomes._sum.amount ?? 0) - (expenses._sum.amount ?? 0);
+  return { ...account, balance };
 }
