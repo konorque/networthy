@@ -56,8 +56,17 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(userId: string, categoryId: string) {
-  const result = await prisma.category.deleteMany({
-    where: { id: categoryId, userId },
-  });
-  if (result.count === 0) throw new HttpError(404, 'Category not found');
+  try {
+    const result = await prisma.category.deleteMany({
+      where: { id: categoryId, userId },
+    });
+    if (result.count === 0) throw new HttpError(404, 'Category not found');
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === 'P2003'
+    )
+      throw new HttpError(409, 'Category has transactions');
+    throw err;
+  }
 }
