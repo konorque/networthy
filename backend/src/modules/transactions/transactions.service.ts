@@ -60,6 +60,12 @@ export async function listTransactions(userId: string) {
 }
 
 export async function deleteTransaction(userId: string, transactionId: string) {
+  const existing = await prisma.transaction.findFirst({
+    where: { id: transactionId, account: { userId } },
+  });
+  if (!existing) throw new HttpError(404, 'Transaction not found');
+  if (existing.transferId)
+    throw new HttpError(400, 'Use /transfers to change a transfer');
   const result = await prisma.transaction.deleteMany({
     where: { id: transactionId, account: { userId } },
   });
@@ -75,6 +81,8 @@ export async function updateTransaction(
     where: { id: transactionId, account: { userId } },
   });
   if (!existing) throw new HttpError(404, 'Transaction not found');
+  if (existing.transferId)
+    throw new HttpError(400, 'Use /transfers to change a transfer');
   await assertOwnAccountAndCategory(userId, input.accountId, input.categoryId);
   const transaction = await prisma.transaction.update({
     where: { id: transactionId, account: { userId } },
