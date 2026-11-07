@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "oxc", "promise", "node"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "ignorePatterns": ["dist/**", "src/generated/**"],
+  "rules": {
+    "eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "typescript/no-floating-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-misused-promises": ["error", { "checksVoidReturn": false }],
+    "eslint/no-underscore-dangle": ["warn", { "allow": ["_sum"] }]
+  }
+}
