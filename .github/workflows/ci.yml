@@ -24,3 +24,8 @@ jobs:
           DATABASE_URL: postgresql://user:password@localhost:5432/db
       - run: npm run lint
       - run: npm run build
+      - run: npm test
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/db
+          JWT_SECRET: ci-only-dummy-secret-at-least-32-characters
+          FRONTEND_URL: http://localhost:5173
