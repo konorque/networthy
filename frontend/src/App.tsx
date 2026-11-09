@@ -1,8 +1,13 @@
+import { Routes, Route } from 'react-router';
+import { LoginPage } from './pages/LoginPage.tsx';
+
 function App() {
   return (
     <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
-      <h1 className="text-3xl font-semibold">Networthy</h1>
-      <p className="mt-2 text-slate-600">Frontend is ready.</p>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<p>Signed in</p>} />
+      </Routes>
     </main>
   );
 }
