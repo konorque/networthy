@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+@theme {
+  --color-page: var(--color-stone-50);
+  --color-surface: #ffffff;
+  --color-line: var(--color-stone-200);
+  --color-ink: var(--color-stone-900);
+  --color-muted: var(--color-stone-500);
+
+  --color-accent: #f1b04c;
+  --color-accent-hover: #e39e36;
+  --color-accent-soft: #fbe6c4;
+  --color-accent-faint: #fdf5e8;
+  --color-accent-ring: #f5c77e;
+
+  --color-income: var(--color-emerald-600);
+  --color-expense: var(--color-rose-600);
+  --color-transfer: var(--color-stone-500);
+  --color-danger: var(--color-rose-600);
+}

@@ -32,41 +32,55 @@ export function LoginPage() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-3 max-w-sm mx-auto mt-16"
-    >
-      <h1 className="text-2xl font-semibold">Sign in</h1>
+    <div className="mx-auto mt-16 max-w-sm">
+      <p className="mb-6 flex items-center gap-2 text-sm font-semibold text-muted">
+        <span className="size-2.5 rounded-full bg-accent" />
+        Networthy
+      </p>
 
-      <input
-        {...register('email')}
-        placeholder="Email"
-        className="border rounded px-3 py-2"
-      />
-      {errors.email && (
-        <p className="text-sm text-red-600">{errors.email.message}</p>
-      )}
-
-      <input
-        {...register('password')}
-        type="password"
-        placeholder="Password"
-        className="border rounded px-3 py-2"
-      />
-      {errors.password && (
-        <p className="text-sm text-red-600">{errors.password.message}</p>
-      )}
-
-      {loginMutation.error && (
-        <p className="text-sm text-red-600">{loginMutation.error.message}</p>
-      )}
-      <button
-        type="submit"
-        disabled={loginMutation.isPending}
-        className="bg-teal-700 text-white rounded py-2"
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-8"
       >
-        Sign in
-      </button>
-    </form>
+        <h1 className="text-2xl font-semibold">Sign in</h1>
+
+        <div className="flex flex-col gap-1">
+          <input
+            {...register('email')}
+            placeholder="Email"
+            className="rounded-lg border border-line px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring"
+          />
+          {errors.email && (
+            <p className="text-sm text-danger">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <input
+            {...register('password')}
+            type="password"
+            placeholder="Password"
+            className="rounded-lg border border-line px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring"
+          />
+          {errors.password && (
+            <p className="text-sm text-danger">{errors.password.message}</p>
+          )}
+        </div>
+
+        {loginMutation.error && (
+          <p className="rounded-lg bg-accent-faint px-3 py-2 text-sm text-danger">
+            {loginMutation.error.message}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loginMutation.isPending}
+          className="rounded-lg bg-accent py-2 font-medium text-ink transition-colors hover:bg-accent-hover disabled:opacity-60"
+        >
+          {loginMutation.isPending ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+    </div>
   );
 }
