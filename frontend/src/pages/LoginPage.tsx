@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 import { z } from 'zod';
 
@@ -20,11 +20,15 @@ export function LoginPage() {
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginForm) =>
       api('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => navigate('/'),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['me'] });
+      navigate('/');
+    },
   });
 
   function onSubmit(data: LoginForm) {
