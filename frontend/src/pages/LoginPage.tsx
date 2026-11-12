@@ -36,11 +36,13 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm">
-      <p className="mb-6 flex items-center gap-2 text-sm font-semibold text-muted">
-        <span className="size-2.5 rounded-full bg-accent" />
-        Networthy
-      </p>
+    <div className="mx-auto mt-16 max-w-sm px-4">
+      <div className="mx-auto flex h-16 max-w-2xl items-center justify-between px-4">
+        <p className="mb-6 flex items-center gap-2 text-sm font-semibold text-muted">
+          <span className="size-2.5 rounded-full bg-accent" />
+          Networthy
+        </p>
+      </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
