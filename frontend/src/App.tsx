@@ -4,6 +4,7 @@ import { AccountsPage } from './pages/AccountsPage.tsx';
 import { ProfilePage } from './pages/ProfilePage.tsx';
 import { CategoriesPage } from './pages/CategoriesPage.tsx';
 import { RequireAuth } from './components/RequireAuth.tsx';
+import { Toaster } from 'sonner';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/categories" element={<CategoriesPage />} />
         </Route>
       </Routes>
+      <Toaster position="bottom-right" richColors />
     </main>
   );
 }

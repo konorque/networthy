@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api } from '../lib/api.ts';
+import { FormError } from '../components/FormError.tsx';
+import { toast } from 'sonner';
 
 type Category = { id: string; name: string };
 
@@ -23,7 +25,12 @@ export function CategoriesPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CategoryForm>({ resolver: zodResolver(categorySchema) });
+    setError,
+    clearErrors,
+  } = useForm<CategoryForm>({
+    resolver: zodResolver(categorySchema),
+    reValidateMode: 'onSubmit',
+  });
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -33,6 +40,16 @@ export function CategoriesPage() {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       reset();
     },
+    onError: (err) => setError('root', { message: err.message }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api(`/categories/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast.success('Category deleted');
+    },
+    onError: (err) => toast.error(err.message),
   });
 
   if (isPending) return <p>Loading...</p>;
@@ -46,30 +63,32 @@ export function CategoriesPage() {
         className="mb-6 flex gap-2"
       >
         <input
-          {...register('name')}
+          {...register('name', { onChange: () => clearErrors() })}
           placeholder="New Category"
           className="rounded-lg border border-line px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring flex-1"
         />
         <button
           type="submit"
           disabled={createMutation.isPending}
-          className="px-4 rounded-lg bg-accent py-2 font-medium text-ink transition-colors hover:bg-accent-hover disabled:opacity-60"
+          className="w-24 px-4 rounded-lg bg-accent py-2 font-medium text-ink transition-colors hover:bg-accent-hover disabled:opacity-60"
         >
-          Add{/* {createMutation.isPending ? 'Adding...' : 'Add'} */}
+          {createMutation.isPending ? 'Adding…' : 'Add'}
         </button>
       </form>
-      {errors.name && (
-        <p className="text-sm text-danger">{errors.name.message}</p>
-      )}
-      {createMutation.error && (
-        <p className="rounded-lg bg-accent-faint px-3 py-2 text-sm text-danger">
-          {createMutation.error.message}
-        </p>
-      )}
+      <FormError errors={errors} />
       <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
         {data.map((category) => (
-          <li key={category.id} className="px-5 py-4 font-medium">
+          <li
+            key={category.id}
+            className="px-5 py-4 font-medium flex items-center justify-between"
+          >
             {category.name}
+            <button
+              onClick={() => deleteMutation.mutate(category.id)}
+              className="px-4 rounded-lg bg-accent py-2 font-medium text-sm transition-colors hover:text-danger"
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
