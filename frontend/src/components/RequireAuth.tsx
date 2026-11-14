@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 import { Navigate, Outlet, Link, NavLink, useLocation } from 'react-router';
 import { motion, MotionConfig, type Transition } from 'motion/react';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 const NAV_PATHS = ['/', '/categories'];
 // One spring for both moving and appearing, so they feel the same
@@ -64,18 +64,27 @@ function NavItem({
 
 export function RequireAuth() {
   const { pathname } = useLocation();
-  const prevPathRef = useRef(pathname);
-  const lastNavPathRef = useRef(NAV_PATHS.includes(pathname) ? pathname : null);
   const onNavPage = NAV_PATHS.includes(pathname);
-  // Came to a nav page from a page without the pill (e.g. /profile)
-  const pillAppear = !NAV_PATHS.includes(prevPathRef.current);
-  // Left the nav pages: the last active link plays the shrink animation
-  const shrinkPath = onNavPage ? null : lastNavPathRef.current;
+  const [visit, setVisit] = useState({
+    path: pathname,
+    prevPath: pathname,
+    lastNavPath: onNavPage ? pathname : null,
+  });
 
-  useEffect(() => {
-    prevPathRef.current = pathname;
-    if (NAV_PATHS.includes(pathname)) lastNavPathRef.current = pathname;
-  }, [pathname]);
+  // Path changed: remember where we came from.
+  // setState during render makes React re-render right away with the new values.
+  if (visit.path !== pathname) {
+    setVisit({
+      path: pathname,
+      prevPath: visit.path,
+      lastNavPath: NAV_PATHS.includes(visit.path) ? visit.path : visit.lastNavPath,
+    });
+  }
+
+  // Came to a nav page from a page without the pill (e.g. /profile)
+  const pillAppear = !NAV_PATHS.includes(visit.prevPath);
+  // Left the nav pages: the last active link plays the shrink animation
+  const shrinkPath = onNavPage ? null : visit.lastNavPath;
 
   const { data, isPending, error } = useQuery({
     queryKey: ['me'],
