@@ -55,6 +55,9 @@ export async function listTransactions(userId: string) {
       amount: true,
       date: true,
       note: true,
+      transferId: true,
+      account: { select: { name: true, currency: true } },
+      category: { select: { name: true } },
     },
   });
 }
