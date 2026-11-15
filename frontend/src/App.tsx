@@ -3,6 +3,7 @@ import { LoginPage } from './pages/LoginPage.tsx';
 import { AccountsPage } from './pages/AccountsPage.tsx';
 import { ProfilePage } from './pages/ProfilePage.tsx';
 import { CategoriesPage } from './pages/CategoriesPage.tsx';
+import { TransactionsPage } from './pages/TransactionsPage.tsx';
 import { RequireAuth } from './components/RequireAuth.tsx';
 import { Toaster } from 'sonner';
 
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<AccountsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
         </Route>
       </Routes>
       <Toaster position="bottom-right" richColors />

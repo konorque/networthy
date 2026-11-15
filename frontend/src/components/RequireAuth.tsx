@@ -4,7 +4,7 @@ import { Navigate, Outlet, Link, NavLink, useLocation } from 'react-router';
 import { motion, MotionConfig, type Transition } from 'motion/react';
 import { useState, type ReactNode } from 'react';
 
-const NAV_PATHS = ['/', '/categories'];
+const NAV_PATHS = ['/', '/categories', '/transactions'];
 // One spring for both moving and appearing, so they feel the same
 const PILL_SPRING: Transition = { type: 'spring', bounce: 0.3, duration: 0.8 };
 // Reverse of the appear spring: small swell, then shrink to zero.
@@ -77,7 +77,9 @@ export function RequireAuth() {
     setVisit({
       path: pathname,
       prevPath: visit.path,
-      lastNavPath: NAV_PATHS.includes(visit.path) ? visit.path : visit.lastNavPath,
+      lastNavPath: NAV_PATHS.includes(visit.path)
+        ? visit.path
+        : visit.lastNavPath,
     });
   }
 
@@ -122,6 +124,13 @@ export function RequireAuth() {
                 shrink={shrinkPath === '/categories'}
               >
                 Categories
+              </NavItem>
+              <NavItem
+                to="/transactions"
+                appear={pillAppear}
+                shrink={shrinkPath === '/transactions'}
+              >
+                Transactions
               </NavItem>
             </nav>
           </MotionConfig>
