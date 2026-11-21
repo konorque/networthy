@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 import { Navigate, Outlet, Link, NavLink, useLocation } from 'react-router';
-import { motion, MotionConfig, type Transition } from 'motion/react';
+import { motion, type Transition } from 'motion/react';
+import { SOFT_SPRING } from '../lib/motion.ts';
 import { useState, type ReactNode } from 'react';
 
 const NAV_PATHS = ['/', '/categories', '/transactions'];
-// One spring for both moving and appearing, so they feel the same
-const PILL_SPRING: Transition = { type: 'spring', bounce: 0.3, duration: 0.8 };
 // Reverse of the appear spring: small swell, then shrink to zero.
 // Keyframes instead of a spring: a spring to 0 would overshoot into negative scale.
 const PILL_SHRINK: Transition = {
@@ -44,7 +43,7 @@ function NavItem({
               initial={appear ? { scale: 0 } : false}
               animate={{ scale: 1 }}
               className="absolute inset-0 rounded-lg bg-accent-soft"
-              transition={PILL_SPRING}
+              transition={SOFT_SPRING}
             />
           )}
           {shrink && (
@@ -108,32 +107,30 @@ export function RequireAuth() {
             <span className="size-2.5 rounded-full bg-accent" />
             Networthy
           </Link>
-          <MotionConfig reducedMotion="user">
-            <nav className="flex gap-1 text-sm">
-              <NavItem
-                to="/"
-                end
-                appear={pillAppear}
-                shrink={shrinkPath === '/'}
-              >
-                Accounts
-              </NavItem>
-              <NavItem
-                to="/categories"
-                appear={pillAppear}
-                shrink={shrinkPath === '/categories'}
-              >
-                Categories
-              </NavItem>
-              <NavItem
-                to="/transactions"
-                appear={pillAppear}
-                shrink={shrinkPath === '/transactions'}
-              >
-                Transactions
-              </NavItem>
-            </nav>
-          </MotionConfig>
+          <nav className="flex gap-1 text-sm">
+            <NavItem
+              to="/"
+              end
+              appear={pillAppear}
+              shrink={shrinkPath === '/'}
+            >
+              Accounts
+            </NavItem>
+            <NavItem
+              to="/categories"
+              appear={pillAppear}
+              shrink={shrinkPath === '/categories'}
+            >
+              Categories
+            </NavItem>
+            <NavItem
+              to="/transactions"
+              appear={pillAppear}
+              shrink={shrinkPath === '/transactions'}
+            >
+              Transactions
+            </NavItem>
+          </nav>
           <Link
             to="/profile"
             className="flex size-9 items-center justify-center rounded-full bg-accent-soft font-semibold"
