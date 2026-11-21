@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { motion } from 'motion/react';
+import { SOFT_SPRING } from '../lib/motion.ts';
+import { fieldClass, formCardClass } from '../lib/styles.ts';
 import { useForm } from 'react-hook-form';
+import { TransferForm } from '../components/TransferForm.tsx';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { api } from '../lib/api.ts';
 import { formatMoney } from '../lib/money.ts';
@@ -33,9 +38,6 @@ const transactionSchema = z.object({
 
 type TransactionForm = z.infer<typeof transactionSchema>;
 
-const fieldClass =
-  'w-full rounded-lg border border-line bg-surface px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring';
-
 function amountClass(type: string) {
   if (type === 'INCOME') return 'text-income';
   if (type === 'EXPENSE') return 'text-expense';
@@ -62,6 +64,8 @@ export function TransactionsPage() {
     queryKey: ['categories'],
     queryFn: () => api<Option[]>('/categories'),
   });
+
+  const [isTransfer, setIsTransfer] = useState(false);
 
   const {
     register,
@@ -118,60 +122,94 @@ export function TransactionsPage() {
   if (isPending) return <p>Loading...</p>;
   if (error) return <p className="text-danger">{error.message}</p>;
 
+  const visible = data.filter((transaction) =>
+    isTransfer ? transaction.transferId : !transaction.transferId,
+  );
+
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">Transactions</h1>
-      <form
-        onSubmit={handleSubmit((data) => createMutation.mutate(data))}
-        onChange={() => clearErrors()}
-        className="mb-6 grid gap-3 rounded-xl border border-line bg-surface p-5 sm:grid-cols-3"
-      >
-        <select {...register('accountId')} className={fieldClass}>
-          <option value="">Account</option>
-          {accounts?.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.name}
-            </option>
-          ))}
-        </select>
-        <select {...register('categoryId')} className={fieldClass}>
-          <option value="">Category</option>
-          {categories?.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <select {...register('type')} className={fieldClass}>
-          <option value="EXPENSE">Expense</option>
-          <option value="INCOME">Income</option>
-        </select>
-        <input
-          type="number"
-          step="any"
-          placeholder="Enter amount"
-          {...register('amount', { valueAsNumber: true })}
-          className={fieldClass}
-        />
-        <input type="date" {...register('date')} className={fieldClass} />
-        <input
-          placeholder="Note"
-          {...register('note')}
-          className={fieldClass}
-        />
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">
+          {isTransfer ? 'Transfers' : 'Transactions'}
+        </h1>
         <button
-          type="submit"
-          disabled={createMutation.isPending}
-          className="rounded-lg bg-accent px-4 py-2 font-medium text-ink transition-colors hover:bg-accent-hover disabled:opacity-60 sm:col-start-3"
+          type="button"
+          role="switch"
+          aria-checked={isTransfer}
+          onClick={() => setIsTransfer(!isTransfer)}
+          className="flex items-center gap-3 text-sm font-medium text-muted"
         >
-          {createMutation.isPending ? 'Adding…' : 'Add'}
+          Transfers
+          {/* Track: grey when off, accent when on */}
+          <span
+            className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors duration-500 ${
+              isTransfer ? 'bg-accent' : 'bg-line'
+            }`}
+          >
+            {/* Knob: slides right when on */}
+            <motion.span
+              animate={{ x: isTransfer ? 20 : 0 }}
+              transition={SOFT_SPRING}
+              className="size-5 rounded-full bg-surface shadow"
+            />
+          </span>
         </button>
-        <div className="empty:hidden sm:col-span-3">
-          <FormError errors={errors} />
-        </div>
-      </form>
+      </div>
+      {isTransfer ? (
+        <TransferForm />
+      ) : (
+        <form
+          onSubmit={handleSubmit((data) => createMutation.mutate(data))}
+          onChange={() => clearErrors()}
+          className={formCardClass}
+        >
+          <select {...register('accountId')} className={fieldClass}>
+            <option value="">Account</option>
+            {accounts?.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name}
+              </option>
+            ))}
+          </select>
+          <select {...register('categoryId')} className={fieldClass}>
+            <option value="">Category</option>
+            {categories?.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          <select {...register('type')} className={fieldClass}>
+            <option value="EXPENSE">Expense</option>
+            <option value="INCOME">Income</option>
+          </select>
+          <input
+            type="number"
+            step="any"
+            placeholder="Enter amount"
+            {...register('amount', { valueAsNumber: true })}
+            className={fieldClass}
+          />
+          <input type="date" {...register('date')} className={fieldClass} />
+          <input
+            placeholder="Note"
+            {...register('note')}
+            className={fieldClass}
+          />
+          <button
+            type="submit"
+            disabled={createMutation.isPending}
+            className="rounded-lg bg-accent px-4 py-2 font-medium text-ink transition-colors hover:bg-accent-hover disabled:opacity-60 sm:col-start-3"
+          >
+            {createMutation.isPending ? 'Adding…' : 'Add'}
+          </button>
+          <div className="empty:hidden sm:col-span-3">
+            <FormError errors={errors} />
+          </div>
+        </form>
+      )}
       <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-        {data.map((transaction) => (
+        {visible.map((transaction) => (
           <li
             key={transaction.id}
             className="flex items-center justify-between px-5 py-4"
