@@ -105,6 +105,16 @@ export function TransactionsPage() {
     onError: (err) => toast.error(err.message),
   });
 
+  const deleteTransferMutation = useMutation({
+    mutationFn: (id: string) => api(`/transfers/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      toast.success('Transfer deleted');
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   if (isPending) return <p>Loading...</p>;
   if (error) return <p className="text-danger">{error.message}</p>;
 
@@ -182,17 +192,18 @@ export function TransactionsPage() {
                 {amountSign(transaction.type)}
                 {formatMoney(transaction.amount, transaction.account.currency)}
               </p>
-              {/* Fixed-width slot: amounts stay aligned even in rows without a button */}
               <div className="w-20 text-right">
-                {!transaction.transferId && (
-                  <button
-                    type="button"
-                    onClick={() => deleteMutation.mutate(transaction.id)}
-                    className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium transition-colors hover:text-danger"
-                  >
-                    Delete
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    transaction.transferId
+                      ? deleteTransferMutation.mutate(transaction.transferId)
+                      : deleteMutation.mutate(transaction.id)
+                  }
+                  className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium transition-colors hover:text-danger"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </li>
