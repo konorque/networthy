@@ -2,7 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { SOFT_SPRING } from '../lib/motion.ts';
+import { fieldClass, formCardClass } from '../lib/styles.ts';
 import { useForm } from 'react-hook-form';
+import { TransferForm } from '../components/TransferForm.tsx';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { api } from '../lib/api.ts';
 import { formatMoney } from '../lib/money.ts';
@@ -35,9 +37,6 @@ const transactionSchema = z.object({
 });
 
 type TransactionForm = z.infer<typeof transactionSchema>;
-
-const fieldClass =
-  'w-full rounded-lg border border-line bg-surface px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring';
 
 function amountClass(type: string) {
   if (type === 'INCOME') return 'text-income';
@@ -157,12 +156,12 @@ export function TransactionsPage() {
         </button>
       </div>
       {isTransfer ? (
-        <p>Transfer form</p>
+        <TransferForm />
       ) : (
         <form
           onSubmit={handleSubmit((data) => createMutation.mutate(data))}
           onChange={() => clearErrors()}
-          className="mb-6 grid gap-3 rounded-xl border border-line bg-surface p-5 sm:grid-cols-3"
+          className={formCardClass}
         >
           <select {...register('accountId')} className={fieldClass}>
             <option value="">Account</option>
