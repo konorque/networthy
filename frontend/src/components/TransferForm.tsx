@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fieldClass, formCardClass, primaryButtonClass } from '../lib/styles.ts';
+import {
+  fieldClass,
+  formCardClass,
+  primaryButtonClass,
+} from '../lib/styles.ts';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { api } from '../lib/api.ts';
@@ -7,15 +11,20 @@ import { FormError } from './FormError.tsx';
 import { z } from 'zod';
 import { toast } from 'sonner';
 
-type Option = {
+type Account = {
   id: string;
   name: string;
+  currency: string;
 };
 
 const transferSchema = z.object({
   fromAccountId: z.string().min(1, 'Choose an account'),
   toAccountId: z.string().min(1, 'Choose an account'),
   amount: z.number({ error: 'Enter an amount' }).positive(),
+  toAmount: z
+    .number({ error: 'Enter the received amount' })
+    .positive()
+    .optional(),
   date: z.string().trim().min(1, 'Choose a date').max(50),
   note: z.string().trim().optional(),
 });
@@ -25,11 +34,12 @@ type TransferValues = z.infer<typeof transferSchema>;
 export function TransferForm() {
   const { data: accounts } = useQuery({
     queryKey: ['accounts'],
-    queryFn: () => api<Option[]>('/accounts'),
+    queryFn: () => api<Account[]>('/accounts'),
   });
 
   const {
     register,
+    watch,
     handleSubmit,
     reset,
     formState: { errors },
@@ -40,6 +50,12 @@ export function TransferForm() {
     reValidateMode: 'onSubmit',
     defaultValues: { date: new Date().toLocaleDateString('en-CA') },
   });
+  const fromId = watch('fromAccountId');
+  const toId = watch('toAccountId');
+  const fromAccount = accounts?.find((account) => account.id === fromId);
+  const toAccount = accounts?.find((account) => account.id === toId);
+  const differentCurrency =
+    fromAccount && toAccount && fromAccount.currency !== toAccount.currency;
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -51,7 +67,7 @@ export function TransferForm() {
           fromAccountId: data.fromAccountId,
           toAccountId: data.toAccountId,
           fromAmount: cents,
-          toAmount: cents,
+          toAmount: data.toAmount ? Math.round(data.toAmount * 100) : cents,
           date: data.date,
           note: data.note,
         }),
@@ -96,6 +112,18 @@ export function TransferForm() {
         {...register('amount', { valueAsNumber: true })}
         className={fieldClass}
       />
+      {differentCurrency && (
+        <input
+          type="number"
+          step="any"
+          placeholder="Received amount"
+          {...register('toAmount', {
+            valueAsNumber: true,
+            shouldUnregister: true,
+          })}
+          className={fieldClass}
+        />
+      )}
       <input type="date" {...register('date')} className={fieldClass} />
       <input placeholder="Note" {...register('note')} className={fieldClass} />
       <button
