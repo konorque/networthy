@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api } from '../lib/api.ts';
 import { FormError } from '../components/FormError.tsx';
 import { formatMoney } from '../lib/money.ts';
 import { fieldClass, primaryButtonClass } from '../lib/styles.ts';
+import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
+import { toast } from 'sonner';
 
 type Account = { id: string; name: string; currency: string; balance: number };
 
@@ -20,6 +23,8 @@ export function AccountsPage() {
     queryKey: ['accounts'],
     queryFn: () => api<Account[]>('/accounts'),
   });
+
+  const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
 
   const {
     register,
@@ -42,6 +47,17 @@ export function AccountsPage() {
       reset();
     },
     onError: (err) => setError('root', { message: err.message }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api(`/accounts/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success('Account deleted successfully');
+      setAccountToDelete(null);
+    },
+    onError: (err) => toast.error(err.message),
   });
 
   if (isPending) return <p>Loading...</p>;
@@ -84,14 +100,33 @@ export function AccountsPage() {
               <p className="font-medium">{account.name}</p>
               <p className="text-sm text-muted">{account.currency}</p>
             </div>
-            <p
-              className={`font-medium tabular-nums ${account.balance < 0 ? 'text-expense' : ''}`}
-            >
-              {formatMoney(account.balance, account.currency)}
-            </p>
+            <div className="flex items-center gap-4">
+              <p
+                className={`font-medium tabular-nums ${account.balance < 0 ? 'text-expense' : ''}`}
+              >
+                {formatMoney(account.balance, account.currency)}
+              </p>
+              <button
+                type="button"
+                onClick={() => setAccountToDelete(account)}
+                className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium transition-colors hover:text-danger"
+              >
+                Delete
+              </button>
+            </div>
           </li>
         ))}
       </ul>
+      <ConfirmDialog
+        open={accountToDelete !== null}
+        title={`Delete "${accountToDelete?.name}?"`}
+        message="All transactions in this account will be deleted too. This can't be undone."
+        pending={deleteMutation.isPending}
+        onConfirm={() =>
+          accountToDelete && deleteMutation.mutate(accountToDelete.id)
+        }
+        onCancel={() => setAccountToDelete(null)}
+      />
     </div>
   );
 }
