@@ -16,17 +16,17 @@ export async function createLoggedInAgent(
   password = 'password123',
 ) {
   const agent = request.agent(app);
-  await agent.post('/auth/register').send({ email, password }).expect(201);
-  await agent.post('/auth/login').send({ email, password }).expect(200);
+  await agent.post('/api/auth/register').send({ email, password }).expect(201);
+  await agent.post('/api/auth/login').send({ email, password }).expect(200);
   return agent;
 }
 
 export async function createAccount(agent: Agent, name: string, currency = 'USD') {
-  const res = await agent.post('/accounts').send({ name, currency }).expect(201);
+  const res = await agent.post('/api/accounts').send({ name, currency }).expect(201);
   return res.body.id as string;
 }
 
 export async function createCategory(agent: Agent, name: string) {
-  const res = await agent.post('/categories').send({ name }).expect(201);
+  const res = await agent.post('/api/categories').send({ name }).expect(201);
   return res.body.id as string;
 }

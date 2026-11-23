@@ -17,7 +17,7 @@ describe('transactions', () => {
     const aliceAccountId = await createAccount(alice, 'Card');
     const bobCategoryId = await createCategory(bob, 'Food');
 
-    const res = await bob.post('/transactions').send({
+    const res = await bob.post('/api/transactions').send({
       accountId: aliceAccountId,
       categoryId: bobCategoryId,
       type: 'EXPENSE',
@@ -27,7 +27,7 @@ describe('transactions', () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Account not found');
 
-    const aliceTransactions = await alice.get('/transactions');
+    const aliceTransactions = await alice.get('/api/transactions');
     expect(aliceTransactions.body).toHaveLength(0);
   });
 
@@ -36,7 +36,7 @@ describe('transactions', () => {
     const cardId = await createAccount(alice, 'Card');
     const cashId = await createAccount(alice, 'Cash');
     await alice
-      .post('/transfers')
+      .post('/api/transfers')
       .send({
         fromAccountId: cardId,
         toAccountId: cashId,
@@ -46,14 +46,14 @@ describe('transactions', () => {
       })
       .expect(201);
 
-    const list = await alice.get('/transactions');
+    const list = await alice.get('/api/transactions');
     const half = list.body[0];
 
-    const res = await alice.delete(`/transactions/${half.id}`);
+    const res = await alice.delete(`/api/transactions/${half.id}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('Use /transfers to change a transfer');
 
-    const after = await alice.get('/transactions');
+    const after = await alice.get('/api/transactions');
     expect(after.body).toHaveLength(2);
   });
 });
