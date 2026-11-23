@@ -13,12 +13,12 @@ describe('transfers', () => {
   it('moves money between accounts', async () => {
     const alice = await createLoggedInAgent('alice@example.com');
     const aliceCard = await alice
-      .post('/accounts')
+      .post('/api/accounts')
       .send({ name: 'Card', currency: 'USD' });
     const aliceCash = await alice
-      .post('/accounts')
+      .post('/api/accounts')
       .send({ name: 'Cash', currency: 'USD' });
-    const transfer = await alice.post('/transfers').send({
+    const transfer = await alice.post('/api/transfers').send({
       fromAccountId: aliceCard.body.id,
       toAccountId: aliceCash.body.id,
       fromAmount: 50000,
@@ -27,16 +27,16 @@ describe('transfers', () => {
     });
 
     expect(transfer.status).toBe(201);
-    const card = await alice.get(`/accounts/${aliceCard.body.id}`);
+    const card = await alice.get(`/api/accounts/${aliceCard.body.id}`);
     expect(card.body.balance).toBe(-50000);
-    const cash = await alice.get(`/accounts/${aliceCash.body.id}`);
+    const cash = await alice.get(`/api/accounts/${aliceCash.body.id}`);
     expect(cash.body.balance).toBe(50000);
   });
   it('returns 400 for a transfer to the same account', async () => {
     const alice = await createLoggedInAgent('alice@example.com');
     const cardId = await createAccount(alice, 'Card');
 
-    const res = await alice.post('/transfers').send({
+    const res = await alice.post('/api/transfers').send({
       fromAccountId: cardId,
       toAccountId: cardId,
       fromAmount: 50000,
@@ -52,7 +52,7 @@ describe('transfers', () => {
     const cardId = await createAccount(alice, 'Card');
     const cashId = await createAccount(alice, 'Cash');
 
-    const res = await alice.post('/transfers').send({
+    const res = await alice.post('/api/transfers').send({
       fromAccountId: cardId,
       toAccountId: cashId,
       fromAmount: 50000,
@@ -68,7 +68,7 @@ describe('transfers', () => {
     const cardId = await createAccount(alice, 'Card');
     const cashId = await createAccount(alice, 'Cash');
     const transfer = await alice
-      .post('/transfers')
+      .post('/api/transfers')
       .send({
         fromAccountId: cardId,
         toAccountId: cashId,
@@ -78,14 +78,14 @@ describe('transfers', () => {
       })
       .expect(201);
 
-    const res = await alice.delete(`/transfers/${transfer.body.transferId}`);
+    const res = await alice.delete(`/api/transfers/${transfer.body.transferId}`);
     expect(res.status).toBe(204);
 
-    const transactions = await alice.get('/transactions');
+    const transactions = await alice.get('/api/transactions');
     expect(transactions.body).toHaveLength(0);
 
-    const card = await alice.get(`/accounts/${cardId}`);
-    const cash = await alice.get(`/accounts/${cashId}`);
+    const card = await alice.get(`/api/accounts/${cardId}`);
+    const cash = await alice.get(`/api/accounts/${cashId}`);
     expect(card.body.balance).toBe(0);
     expect(cash.body.balance).toBe(0);
   });

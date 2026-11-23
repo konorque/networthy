@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL;
+// Same origin everywhere: Vite proxies /api in dev, Express serves it in production
+const API_URL = '/api';
 
 export class ApiError extends Error {
   readonly status: number;

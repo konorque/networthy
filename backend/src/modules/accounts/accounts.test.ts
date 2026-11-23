@@ -10,11 +10,11 @@ describe('accounts', () => {
     const agent = await createLoggedInAgent();
 
     const created = await agent
-      .post('/accounts')
+      .post('/api/accounts')
       .send({ name: 'Card', currency: 'USD' });
     expect(created.status).toBe(201);
 
-    const list = await agent.get('/accounts');
+    const list = await agent.get('/api/accounts');
     expect(list.status).toBe(200);
     expect(list.body).toHaveLength(1);
     expect(list.body[0]).toMatchObject({
@@ -29,11 +29,11 @@ describe('accounts', () => {
     const bob = await createLoggedInAgent('bob@example.com');
 
     const aliceCreated = await alice
-      .post('/accounts')
+      .post('/api/accounts')
       .send({ name: 'Card', currency: 'USD' });
     expect(aliceCreated.status).toBe(201);
 
-    const bobList = await bob.get('/accounts');
+    const bobList = await bob.get('/api/accounts');
     expect(bobList.status).toBe(200);
     expect(bobList.body).toHaveLength(0);
   });
@@ -43,13 +43,13 @@ describe('accounts', () => {
     const bob = await createLoggedInAgent('bob@example.com');
 
     const aliceCreated = await alice
-      .post('/accounts')
+      .post('/api/accounts')
       .send({ name: 'Card', currency: 'USD' });
     expect(aliceCreated.status).toBe(201);
 
-    const res = await bob.delete(`/accounts/${aliceCreated.body.id}`);
+    const res = await bob.delete(`/api/accounts/${aliceCreated.body.id}`);
     expect(res.status).toBe(404);
-    const aliceList = await alice.get('/accounts');
+    const aliceList = await alice.get('/api/accounts');
     expect(aliceList.body).toHaveLength(1);
   });
 });

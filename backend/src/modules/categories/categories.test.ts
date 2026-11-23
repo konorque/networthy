@@ -15,7 +15,7 @@ describe('categories', () => {
     const alice = await createLoggedInAgent('alice@example.com');
     await createCategory(alice, 'Food');
 
-    const res = await alice.post('/categories').send({ name: 'Food' });
+    const res = await alice.post('/api/categories').send({ name: 'Food' });
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('Category already exists');
   });
@@ -25,15 +25,15 @@ describe('categories', () => {
     const accountId = await createAccount(alice, 'Card');
     const categoryId = await createCategory(alice, 'Food');
     await alice
-      .post('/transactions')
+      .post('/api/transactions')
       .send({ accountId, categoryId, type: 'EXPENSE', amount: 25000, date: '2026-11-08' })
       .expect(201);
 
-    const res = await alice.delete(`/categories/${categoryId}`);
+    const res = await alice.delete(`/api/categories/${categoryId}`);
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('Category has transactions');
 
-    const list = await alice.get('/categories');
+    const list = await alice.get('/api/categories');
     expect(list.body).toHaveLength(1);
   });
 });
