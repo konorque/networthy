@@ -3,6 +3,8 @@ import { prisma } from '../../lib/prisma.js';
 import { HttpError } from '../../lib/HttpError.js';
 import type { RegisterInput, LoginInput } from './auth.schemas.js';
 import { Prisma } from '../../generated/prisma/client.js';
+import { randomUUID } from 'node:crypto';
+import { seedDemoData } from './demo.seed.js';
 
 export async function register(input: RegisterInput) {
   const passwordHash = await bcrypt.hash(input.password, 10);
@@ -37,4 +39,34 @@ export async function getMe(userId: string) {
   });
   if (!user) throw new HttpError(401, 'Not authenticated');
   return user;
+}
+
+export async function createDemoUser() {
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  await prisma.transaction.deleteMany({
+    where: {
+      account: {
+        user: {
+          email: { endsWith: '@demo.networthy.app' },
+          createdAt: { lt: dayAgo },
+        },
+      },
+    },
+  });
+  await prisma.user.deleteMany({
+    where: {
+      email: { endsWith: '@demo.networthy.app' },
+      createdAt: { lt: dayAgo },
+    },
+  });
+  const email = `demo-${randomUUID()}@demo.networthy.app`;
+  const passwordHash = await bcrypt.hash(randomUUID(), 10);
+  return await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: { email, passwordHash },
+      select: { id: true, email: true },
+    });
+    await seedDemoData(tx, user.id);
+    return user;
+  });
 }
