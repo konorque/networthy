@@ -21,3 +21,13 @@ export const authLimiter = rateLimit({
   skip: () => isTest,
   message: { error: 'Too many attempts, try again later' },
 });
+
+// "Try demo" creates a user with seeded data, so cap it hard per IP
+export const demoLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: () => isTest,
+  message: { error: 'Too many demo sessions, try again later' },
+});

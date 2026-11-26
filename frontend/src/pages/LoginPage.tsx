@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 import { z } from 'zod';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.email(),
@@ -28,6 +29,17 @@ export function LoginPage() {
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ['me'] });
       navigate('/');
+    },
+  });
+
+  const demoMutation = useMutation({
+    mutationFn: () => api('/auth/demo', { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['me'] });
+      navigate('/');
+    },
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 
@@ -85,6 +97,16 @@ export function LoginPage() {
           className="rounded-lg bg-accent py-2 font-medium text-ink transition-colors hover:bg-accent-hover disabled:opacity-60"
         >
           {loginMutation.isPending ? 'Signing in…' : 'Sign in'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            demoMutation.mutate();
+          }}
+          disabled={demoMutation.isPending}
+          className="rounded-lg border border-line py-2 font-medium text-ink transition-colors hover:bg-accent-faint disabled:opacity-60"
+        >
+          {demoMutation.isPending ? 'Preparing demo…' : 'Try demo'}
         </button>
       </form>
     </div>
